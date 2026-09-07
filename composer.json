@@ -1,11 +1,14 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/livewire-starter-kit",
+    "name": "wahfix/nadi",
     "type": "project",
-    "description": "The official Laravel starter kit for Livewire.",
+    "description": "NADI — Loan Management System: prototipe fungsional end-to-end untuk pengelolaan pinjaman, pembayaran, agunan, dan penagihan.",
     "keywords": [
+        "loan",
+        "management",
+        "lms",
         "laravel",
-        "framework"
+        "livewire"
     ],
     "license": "MIT",
     "require": {
