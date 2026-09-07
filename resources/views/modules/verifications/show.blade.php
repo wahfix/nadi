@@ -30,6 +30,10 @@
                         {{ format_date_indonesian($verification->created_at, true) }}
                     </flux:text>
                 </div>
+
+                <flux:button as="a" :href="route('verifications.print', $verification)" icon="printer">
+                    Cetak Hasil
+                </flux:button>
             </div>
         </flux:card>
 

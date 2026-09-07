@@ -1,15 +1,21 @@
 <x-layouts::app :title="__('Detail Angsuran')">
     <div class="flex flex-col gap-6 rounded-xl">
-        <div class="flex flex-col gap-1.5">
-            <flux:heading size="xl">Angsuran Ke-{{ $installment->installment_number }}</flux:heading>
-            <flux:subheading>
-                Pinjaman
-                <a href="{{ route('loans.show', $installment->loan) }}" wire:navigate class="font-mono text-neutral-700 underline dark:text-neutral-300">
-                    {{ $installment->loan->loan_number }}
-                </a>
-                —
-                {{ $installment->loan->customer?->full_name ?? '-' }}
-            </flux:subheading>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+            <div class="flex flex-col gap-1.5">
+                <flux:heading size="xl">Angsuran Ke-{{ $installment->installment_number }}</flux:heading>
+                <flux:subheading>
+                    Pinjaman
+                    <a href="{{ route('loans.show', $installment->loan) }}" wire:navigate class="font-mono text-neutral-700 underline dark:text-neutral-300">
+                        {{ $installment->loan->loan_number }}
+                    </a>
+                    —
+                    {{ $installment->loan->customer?->full_name ?? '-' }}
+                </flux:subheading>
+            </div>
+
+            <flux:button as="a" :href="route('loans.print-installments', $installment->loan)" icon="printer" variant="primary">
+                Cetak Jadwal
+            </flux:button>
         </div>
 
         <x-flash-message type="success" :message="session('success')" />

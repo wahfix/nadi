@@ -149,6 +149,18 @@ class CollateralController extends Controller
     }
 
     /**
+     * Print the collateral custody receipt (Surat Tanda Terima Jaminan).
+     */
+    public function receipt(Collateral $collateral): View
+    {
+        Gate::authorize('view', $collateral);
+
+        $collateral->load(['loan', 'customer', 'receivedBy']);
+
+        return view('modules.collaterals.receipt', ['collateral' => $collateral]);
+    }
+
+    /**
      * Update the custody status of a collateral.
      */
     public function updateCustody(UpdateCustodyRequest $request, Collateral $collateral): RedirectResponse

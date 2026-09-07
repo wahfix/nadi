@@ -35,6 +35,12 @@
                         {{ $typeLabels[$collateral->collateral_type] ?? $collateral->collateral_type }} &middot; {{ format_rupiah($collateral->estimated_value) }}
                     </flux:text>
                 </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <flux:button as="a" :href="route('collaterals.receipt', $collateral)" icon="printer">
+                        Surat Tanda Terima
+                    </flux:button>
+                </div>
             </div>
         </flux:card>
 
