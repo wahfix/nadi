@@ -29,8 +29,9 @@
 19. [Pengujian](#19-pengujian)
 20. [Status Roadmap 9 Fase](#20-status-roadmap-9-fase)
 21. [Keterbatasan Prototipe](#21-keterbatasan-prototipe)
-22. [Konvensi Git & Kontribusi](#22-konvensi-git--kontribusi)
-23. [Lisensi](#23-lisensi)
+22. [Laporan Akhir Teknikal](#22-laporan-akhir-teknikal)
+23. [Konvensi Git & Kontribusi](#23-konvensi-git--kontribusi)
+24. [Lisensi](#24-lisensi)
 
 ---
 
@@ -542,13 +543,21 @@ tests/Feature/
 ├── Settings/                  # pengaturan profil/appearance/security
 ├── CustomerTest.php           # CRUD nasabah + validasi + kode CUS
 ├── LoanTest.php               # lifecycle pinjaman, kalkulasi, state machine
+├── InstallmentTest.php        # jadwal angsuran & deteksi keterlambatan
 ├── PaymentTest.php            # alokasi, overpayment, reversal, imutabilitas
 ├── CollectionTest.php         # aktivitas LC, Promise-to-Pay, RBAC
+├── CollateralTest.php         # penerimaan jaminan, verifikasi, pelepasan
+├── IdentityVerificationTest.php # status VERIFIED/FAILED/REQUIRES_REVIEW
+├── SecurityAuthorizationTest.php # RBAC ketat: LC/Cashier/Auditor/unauth = 403
 ├── RbacAccessTest.php         # akses modul mengikuti izin peran
-└── DashboardTest.php
+├── ReportsAndAuditLogTest.php # 10 laporan + 6 dokumen cetak + diff JSON audit
+├── DashboardTest.php
+├── DashboardWidgetTest.php
+└── EndToEndTest.php           # 26 langkah skenario E2E kritis lengkap
 ```
 
-**Status saat ini**: `99 tests / 504 assertions PASS` (Pint & PHPStan level 7 clean).
+**Status saat ini**: `168 tests / 862 assertions PASS`. Verifikasi Fase 9:
+`php artisan migrate:fresh --seed` bersih, Pint clean, PHPStan level clean (0 error).
 
 ### Skenario keamanan yang sudah dites
 
@@ -568,15 +577,15 @@ Pembangunan dilakukan **incremental** per fase (bukan dump kode raksasa).
 |------|-------|--------|
 | 1 | Foundation: auth, RBAC, schema, layout | ✅ Selesai |
 | 2 | Customer Management (+ employment) | ✅ Selesai |
-| 3 | Loan Engine & Financials (bunga, state machine, jadwal) | ✅ Selesai (PR #1; style fix PR #2) |
+| 3 | Loan Engine & Financials (bunga, state machine, jadwal) | ✅ Selesai (PR #1, #2, #8) |
 | 4 | Payment, Allocation & Reversal + kuitansi | ✅ Selesai (PR #3) |
 | 5 | Collection / LC Module + dasbor LC | ✅ Selesai (PR #4) |
-| 6 | Collateral: penerimaan & penyimpanan | ⏳ Berikutnya |
-| 7 | Identity Verification & Collateral Release (8 syarat) | ⏳ Pending |
-| 8 | Audit UI, Reports & Printable documents | ⏳ Pending |
-| 9 | Testing, Security Review & UX polish | ⏳ Pending |
+| 6 | Collateral: penerimaan & penyimpanan | ✅ Selesai (PR #7) |
+| 7 | Identity Verification & Collateral Release (8 syarat) | ✅ Selesai (PR #7) |
+| 8 | Audit UI, Reports & Printable documents | ✅ Selesai (PR #10) |
+| 9 | Testing, Security Review & UX polish | ✅ Selesai (PR #11) |
 
-Setiap fase diverifikasi: `php artisan migrate:fresh --seed` + `php artisan test` sebelum dilanjutkan.
+**Seluruh 9 fase selesai.** Setiap fase diverifikasi: `php artisan migrate:fresh --seed` + `php artisan test` sebelum dilanjutkan.
 
 ---
 
@@ -593,19 +602,92 @@ Batasan fungsional yang jujur untuk dicatat:
 | Area | Status di prototipe ini |
 |------|-------------------------|
 | **Denda/penalty akrual otomatis** | Belum diimplementasikan — struktur data & alokasi denda tersedia, tapi penambahan denda otomatis saat terlambat belum ada |
-| **Collateral & Release (Fase 6–7)** | Belum dibangun — termasuk 8 syarat pelepasan, verifikasi identitas, berita acara serah terima |
-| **Laporan & dokumen cetak (Fase 8)** | Belum dibangun (kecuali kuitansi pembayaran) |
-| **Dasbor spesifik peran (Fase 7)** | Dasbor umum aktif; dasbor peran lengkap menyusul |
-| **Global search & filter lintas entitas** | Belum dibangun (pencarian per-modul ada) |
-| **Upload dokumen** | Belum diaktifkan; desain menyimpan private storage |
-| **Audit UI** | AuditLogService aktif; halaman audit formal di Fase 8 |
+| **Global search & filter lintas entitas** | Belum dibangun (pencarian & filter per-modul tersedia) |
+| **Upload dokumen fisik** | Belum diaktifkan; desain menyimpan di private storage (`storage/app/private/`) |
 | **Hardening produksi** | Rate limiting login dasar (Fortify); review keamanan/legal menyeluruh masih diperlukan |
+
+Modul yang **sudah** dibangun penuh dan teruji (bukan lagi batasan): penerimaan & pelepasan jaminan dengan validasi 8 syarat server-side, verifikasi identitas (3 status), dasbor spesifik per-role, audit log dengan diff JSON, 10 laporan berfilter tanggal, 6 dokumen cetak, serta skenario E2E 26 langkah.
 
 Sebelum digunakan di lingkungan nyata, aplikasi memerlukan review profesional (hukum, akuntansi, keamanan), data riil yang sah, dan hardening tambahan.
 
 ---
 
-## 22. Konvensi Git & Kontribusi
+## 22. Laporan Akhir Teknikal
+
+### 22.1 Fitur yang Diimplementasikan
+
+Prototipe fungsional **NADI — Loan Management System** selesai end-to-end (9 fase):
+
+- **Auth & RBAC**: 7 peran (ADMIN, LO, LC, CASHIER, COLLATERAL_OFFICER, VERIFIER, AUDITOR), akses berbasis izin di level route **dan** policy.
+- **Nasabah & Pekerjaan**: CRUD dengan validasi ketat, nomor `CUS-YYYY-XXXXXX`, profil pekerjaan, pencarian & filter.
+- **Pinjaman**: kalkulasi bunga **FLAT** & **REDUCING_BALANCE** berbasis integer, state machine 11 status, jadwal angsuran otomatis saat pencairan (`NADI-LOAN-YYYY-XXXXXX`).
+- **Pembayaran & Reversal**: alokasi bertingkat **Denda → Bunga → Pokok**, imutabilitas pembayaran, koreksi via reversal dengan audit penuh (`PAY-YYYY-XXXXXX`).
+- **Penagihan LC**: dasbor tunggakan, aktivitas penagihan, janji bayar (Promise-to-Pay).
+- **Jaminan**: penerimaan ber-12-langkah (`COL-YYYY-XXXXXX`), penyimpanan/custody, tanda terima cetak.
+- **Verifikasi & Pelepasan**: verifikasi `VERIFIED`/`FAILED`/`REQUIRES_REVIEW`, pengambilan jaminan dengan **8 syarat server-side**, berita acara serah terima (`REL-YYYY-XXXXXX`).
+- **Audit & Laporan**: 18+ event audit dengan diff JSON before/after, 10 laporan berfilter tanggal, 6 dokumen cetak standar.
+- **UI**: 100% Bahasa Indonesia, dasbor spesifik per peran, modal konfirmasi, empty state informatif, paginasi 15/bagian.
+
+### 22.2 Skema Database
+
+**18 tabel** pada SQLite (`database/database.sqlite`), mata uang tersimpan sebagai **INTEGER Rupiah**:
+
+`users, roles, permissions, role_user, permission_role, customers, employments, loans, loan_status_histories, installments, payments, payment_reversals, collection_activities, collaterals, identity_verifications, collateral_releases, audit_logs, document_references`
+
+### 22.3 Daftar Service Utama (Service Layer)
+
+`CustomerService`, `LoanService`, `LoanStatusService`, `LoanCalculationService`, `InterestCalculationService`, `InstallmentScheduleService`, `PaymentAllocationService`, `PaymentReversalService`, `CollateralService`, `CollateralReleaseService`, `CollectionService`, `AuditLogService`, `SequentialNumberService`, `UserService` — 14 service; seluruh mutasi finansial dibungkus `DB::transaction()`.
+
+### 22.4 Alur Kerja Utama
+
+1. LO mendaftarkan nasabah → mengajukan pinjaman (DRAFT → SUBMITTED).
+2. Admin meriview → menyetujui/tolak → mencairkan → jadwal angsuran terbentuk.
+3. Petugas jaminan menerima agunan → masuk penyimpanan.
+4. Kasir menerima setoran → alokasi Denda→Bunga→Pokok → reversal oleh admin bila keliru.
+5. Pelunasan → pinjaman COMPLETED → jaminan eligible.
+6. Verifier memverifikasi identitas → petugas jaminan mengecek 8 syarat → serah terima + berita acara.
+7. Auditor menginspeksi jejak audit & laporan.
+
+### 22.5 Daftar Akun Demo
+
+Kata sandi semua akun: **`password`**
+
+| Peran | Email |
+|-------|-------|
+| ADMIN | `admin@example.test` |
+| LO | `lo@example.test` |
+| LC | `lc@example.test` |
+| CASHIER | `cashier@example.test` |
+| COLLATERAL OFFICER | `collateral@example.test` |
+| IDENTITY VERIFIER | `verifier@example.test` |
+| AUDITOR | `auditor@example.test` |
+
+### 22.6 Status Pengujian
+
+- **168 tests / 862 assertions — 100% lulus** (Pest 5).
+- Skenario **E2E 26 langkah** (`EndToEndTest`) berjalan penuh tanpa error: nasabah → pinjaman → pencairan → angsuran → jaminan → pelunasan → verifikasi → pelepasan → berita acara → audit kontinu.
+- Keamanan RBAC: LC tidak menyetujui pinjaman, Cashier tidak melepas jaminan, Auditor hanya baca-saja, pengguna tidak terautentikasi diblokir (garis besar: HTTP 403/redirect).
+- `php artisan migrate:fresh --seed` bersih; Pint clean; PHPStan 0 error.
+
+### 22.7 Batasan Sistem yang Diketahui
+
+Lihat [Bab 21](#21-keterbatasan-prototipe). Ringkas: belum ada akrual denda otomatis, pencarian lintas entitas, upload dokumen aktif, dan hardening produksi. Bukan aplikasi berlisensi / patuh regulasi OJK; verifikasi identitas hanya *workflow record* (tidak terhubung ke instansi).
+
+### 22.8 Petunjuk Menjalankan Aplikasi
+
+```bash
+composer install
+cp .env.example .env && php artisan key:generate
+touch database/database.sqlite
+php artisan migrate:fresh --seed
+php artisan serve          # buka http://localhost:8000
+```
+
+Verifikasi: `php artisan test` · CI: `composer ci:check`.
+
+---
+
+## 23. Konvensi Git & Kontribusi
 
 Sesuai dokumen direktif proyek (`AGENTS.md`):
 
@@ -627,7 +709,7 @@ git push origin fase/6-collateral-release
 
 ---
 
-## 23. Lisensi
+## 24. Lisensi
 
 `MIT` — proyek ini dibangun di atas starter kit Laravel resmi (`laravel/livewire-starter-kit`).
 
