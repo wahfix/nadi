@@ -547,6 +547,7 @@ tests/Feature/
 ├── PaymentTest.php            # alokasi, overpayment, reversal, imutabilitas
 ├── CollectionTest.php         # aktivitas LC, Promise-to-Pay, RBAC
 ├── CollateralTest.php         # penerimaan jaminan, verifikasi, pelepasan
+├── GlobalSearchTest.php       # pencarian global lintas entitas + filter RBAC
 ├── IdentityVerificationTest.php # status VERIFIED/FAILED/REQUIRES_REVIEW
 ├── SecurityAuthorizationTest.php # RBAC ketat: LC/Cashier/Auditor/unauth = 403
 ├── RbacAccessTest.php         # akses modul mengikuti izin peran
@@ -556,7 +557,7 @@ tests/Feature/
 └── EndToEndTest.php           # 26 langkah skenario E2E kritis lengkap
 ```
 
-**Status saat ini**: `168 tests / 862 assertions PASS`. Verifikasi Fase 9:
+**Status saat ini**: `180 tests / 907 assertions PASS`. Verifikasi:
 `php artisan migrate:fresh --seed` bersih, Pint clean, PHPStan level clean (0 error).
 
 ### Skenario keamanan yang sudah dites
@@ -602,11 +603,10 @@ Batasan fungsional yang jujur untuk dicatat:
 | Area | Status di prototipe ini |
 |------|-------------------------|
 | **Denda/penalty akrual otomatis** | Belum diimplementasikan — struktur data & alokasi denda tersedia, tapi penambahan denda otomatis saat terlambat belum ada |
-| **Global search & filter lintas entitas** | Belum dibangun (pencarian & filter per-modul tersedia) |
 | **Upload dokumen fisik** | Belum diaktifkan; desain menyimpan di private storage (`storage/app/private/`) |
 | **Hardening produksi** | Rate limiting login dasar (Fortify); review keamanan/legal menyeluruh masih diperlukan |
 
-Modul yang **sudah** dibangun penuh dan teruji (bukan lagi batasan): penerimaan & pelepasan jaminan dengan validasi 8 syarat server-side, verifikasi identitas (3 status), dasbor spesifik per-role, audit log dengan diff JSON, 10 laporan berfilter tanggal, 6 dokumen cetak, serta skenario E2E 26 langkah.
+Modul yang **sudah** dibangun penuh dan teruji (bukan lagi batasan): pencarian global lintas entitas (nomor CUS, NADI-LOAN, PAY, COL, REL + nasabah via nama/telepon/NIK dengan filter otorisasi per-role), penerimaan & pelepasan jaminan dengan validasi 8 syarat server-side, verifikasi identitas (3 status), dasbor spesifik per-role, audit log dengan diff JSON, 10 laporan berfilter tanggal, 6 dokumen cetak, serta skenario E2E 26 langkah.
 
 Sebelum digunakan di lingkungan nyata, aplikasi memerlukan review profesional (hukum, akuntansi, keamanan), data riil yang sah, dan hardening tambahan.
 
@@ -664,14 +664,14 @@ Kata sandi semua akun: **`password`**
 
 ### 22.6 Status Pengujian
 
-- **168 tests / 862 assertions — 100% lulus** (Pest 5).
+- **180 tests / 907 assertions — 100% lulus** (Pest 5).
 - Skenario **E2E 26 langkah** (`EndToEndTest`) berjalan penuh tanpa error: nasabah → pinjaman → pencairan → angsuran → jaminan → pelunasan → verifikasi → pelepasan → berita acara → audit kontinu.
 - Keamanan RBAC: LC tidak menyetujui pinjaman, Cashier tidak melepas jaminan, Auditor hanya baca-saja, pengguna tidak terautentikasi diblokir (garis besar: HTTP 403/redirect).
 - `php artisan migrate:fresh --seed` bersih; Pint clean; PHPStan 0 error.
 
 ### 22.7 Batasan Sistem yang Diketahui
 
-Lihat [Bab 21](#21-keterbatasan-prototipe). Ringkas: belum ada akrual denda otomatis, pencarian lintas entitas, upload dokumen aktif, dan hardening produksi. Bukan aplikasi berlisensi / patuh regulasi OJK; verifikasi identitas hanya *workflow record* (tidak terhubung ke instansi).
+Lihat [Bab 21](#21-keterbatasan-prototipe). Ringkas: belum ada akrual denda otomatis, upload dokumen aktif, dan hardening produksi. Pencarian global lintas entitas sudah tersedia. Bukan aplikasi berlisensi / patuh regulasi OJK; verifikasi identitas hanya *workflow record* (tidak terhubung ke instansi).
 
 ### 22.8 Petunjuk Menjalankan Aplikasi
 

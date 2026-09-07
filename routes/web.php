@@ -10,6 +10,7 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReleaseController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerificationController;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,12 @@ Route::view('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // --- Pencarian Global (nomor CUS, NADI-LOAN, PAY, COL, REL) ---
+    Route::prefix('cari')->name('search.')->group(function () {
+        Route::get('/', [SearchController::class, 'index'])->name('index');
+        Route::get('hasil', [SearchController::class, 'results'])->name('results');
+    });
 
     // --- Modul Nasabah ---
     Route::middleware('permission:customers.view')->prefix('customers')->name('customers.')->group(function () {
