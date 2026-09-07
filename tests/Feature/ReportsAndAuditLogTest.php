@@ -224,6 +224,18 @@ test('users without verifications.view cannot print verification results', funct
         ->assertForbidden();
 });
 
+test('payment receipt document renders a locked allocation breakdown', function () {
+    $cashier = demoUser('cashier@example.test');
+    $payment = Payment::firstOrFail();
+
+    $this->actingAs($cashier)
+        ->get(route('payments.receipt', $payment))
+        ->assertOk()
+        ->assertSee('Kuitansi Pembayaran')
+        ->assertSee($payment->payment_number)
+        ->assertSee(format_rupiah($payment->amount));
+});
+
 test('users without reports.view cannot open report pages', function () {
     $cashier = demoUser('cashier@example.test');
 
