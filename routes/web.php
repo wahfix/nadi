@@ -43,6 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('{loan}/edit', [LoanController::class, 'edit'])->name('edit');
             Route::put('{loan}', [LoanController::class, 'update'])->name('update');
             Route::post('{loan}/submit', [LoanController::class, 'submit'])->name('submit');
+            Route::post('{loan}/cancel', [LoanController::class, 'cancel'])->name('cancel');
         });
 
         Route::middleware('permission:loans.review')->group(function () {

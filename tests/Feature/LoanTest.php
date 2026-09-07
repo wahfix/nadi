@@ -322,8 +322,7 @@ test('a submitted loan cannot be updated through the edit endpoint', function ()
 
     $this->actingAs($lo)
         ->put(route('loans.update', $loan), loanPayload(['principal_amount' => 5000000, 'tenor' => 6]))
-        ->assertRedirect(route('loans.show', $loan))
-        ->assertSessionHas('error');
+        ->assertForbidden();
 
     expect($loan->fresh()->principal_amount)->toBe(10000000);
 });
