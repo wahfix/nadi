@@ -1,0 +1,21 @@
+# NADI — Aider Configuration
+# File ini otomatis di-generate oleh setup-ai-rules.sh
+# Referensi: .ai-instructions.md
+
+read:
+  - .ai-instructions.md
+  - MASTER_BUILD_SPECIFICATION.md
+  - instructions/README.md
+  - instructions/00_MASTER_INDEX_AND_CORE_DIRECTIVES.md
+  - instructions/01_ARCHITECTURE_AND_STANDARDS.md
+  - instructions/02_DATABASE_SCHEMA_AND_RELATIONSHIPS.md
+  - instructions/03_RBAC_ROLES_AND_PERMISSIONS.md
+  - instructions/04_LOAN_ENGINE_AND_FINANCIALS.md
+  - instructions/05_PAYMENT_AND_REVERSAL_SYSTEM.md
+  - instructions/06_COLLECTION_AND_LC_MODULE.md
+  - instructions/07_COLLATERAL_AND_RELEASE_PROTOCOL.md
+  - instructions/08_UI_UX_DASHBOARDS_AND_NAVIGATION.md
+  - instructions/09_AUDIT_LOG_AND_REPORTING.md
+  - instructions/10_SECURITY_VALIDATION_AND_PRIVACY.md
+  - instructions/11_TESTING_AND_VERIFICATION_SPEC.md
+  - instructions/12_BUILD_STRATEGY_AND_QUALITY_CHECKLIST.md
