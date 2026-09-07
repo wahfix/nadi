@@ -22,19 +22,12 @@
             <flux:subheading>Dasbor {{ strtolower($dashboardUser->primaryRoleName()) }} — NADI Loan Management System.</flux:subheading>
         </div>
 
-        <div class="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-zinc-900">
-            <div class="flex items-start gap-3">
-                <div class="rounded-lg bg-accent-content/10 p-2">
-                    <flux:icon name="information-circle" class="size-5" />
-                </div>
-                <div class="text-sm">
-                    <p class="font-medium">Fondasi fase 1 telah aktif: otentikasi, database SQLite, dan RBAC 7 peran.</p>
-                    <p class="mt-1 text-neutral-500 dark:text-neutral-400">
-                        Dasbor ringkasan spesifik peran (portofolio, penagihan, kas hingga serah terima jaminan) akan diaktifkan pada fase 7.
-                    </p>
-                </div>
-            </div>
-        </div>
+        <x-flash-message type="success" :message="session('success')" />
+        <x-flash-message type="error" :message="session('error')" />
+
+        @if ($dashboardPartial)
+            @include('dashboards.'.$dashboardPartial, ['dashboard' => $dashboard])
+        @endif
 
         @if ($quickLinks->isEmpty())
             <div class="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-neutral-300 p-10 text-center dark:border-neutral-700">
