@@ -26,17 +26,19 @@
             <form method="GET" action="{{ route('releases.create') }}" class="mb-6 flex flex-wrap items-end gap-3">
                 <div class="min-w-64 flex-1">
                     <label class="text-sm font-medium text-neutral-700">Pilih Jaminan yang Akan Diambil</label>
-                    <select name="collateral" id="collateral_select" class="flux-input mt-1 w-full" onchange="this.form.submit()">
-                        <option value="">— Pilih Jaminan —</option>
-                        @foreach ($collaterals as $collateral)
-                            <option
-                                value="{{ $collateral->id }}"
-                                {{ (old('collateral_id', $preselectedCollateral?->id) == $collateral->id) ? 'selected' : '' }}
-                            >
-                                {{ $collateral->collateral_code }} — {{ $collateral->customer?->full_name }} ({{ $collateral->description }})
-                            </option>
-                        @endforeach
-                    </select>
+                    <x-searchable-select
+                        name="collateral"
+                        id="collateral_select"
+                        :auto-submit="true"
+                        :selected="$preselectedCollateral?->id ? (string) $preselectedCollateral->id : ''"
+                        placeholder="Ketik kode jaminan (COL-…) atau nama nasabah…"
+                        :options="$collaterals->map(fn ($col) => [
+                            'id' => (string) $col->id,
+                            'label' => $col->collateral_code,
+                            'sublabel' => ($col->customer?->full_name ?? '') . ' · ' . $col->description,
+                            'search' => trim(($col->customer?->full_name ?? '') . ' ' . $col->collateral_code . ' ' . $col->description),
+                        ])->values()"
+                    />
                 </div>
             </form>
 

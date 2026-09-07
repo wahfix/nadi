@@ -29,36 +29,31 @@
             rupiah(value) {
                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
             },
-        }">
+        }" @searchable-select:change="loanId = $event.detail.value">
             <flux:card>
                 <flux:heading size="lg">Tanda Terima Setoran Nasabah</flux:heading>
 
                 <form method="POST" action="{{ route('payments.store') }}" class="mt-5 flex flex-col gap-5">
                     @csrf
 
-                    <div>
-                        <label for="loan_id" class="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                            Pinjaman
-                        </label>
-                        <select
-                            name="loan_id"
-                            id="loan_id"
-                            required
-                            x-model.number="loanId"
-                            class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-200 dark:border-neutral-600 dark:bg-neutral-800"
-                        >
-                            <option value="">— Pilih pinjaman yang membayar —</option>
-                            @foreach ($loans as $loan)
-                                <option value="{{ $loan->id }}" :selected="loanId == {{ $loan->id }}">
-                                    {{ $loan->loan_number }} · {{ $loan->customer?->full_name }}
-                                    (sisa {{ format_rupiah($loan->outstanding_total) }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('loan_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <x-searchable-select
+                        name="loan_id"
+                        id="loan_id"
+                        label="Pinjaman"
+                        required
+                        :selected="$preselectedLoan?->id ? (string) $preselectedLoan->id : ''"
+                        placeholder="Ketik nomor pinjaman (NADI-LOAN-…) atau nama nasabah…"
+                        :options="$loans->map(fn ($loan) => [
+                            'id' => (string) $loan->id,
+                            'label' => $loan->loan_number,
+                            'sublabel' => $loan->customer?->full_name . ' · Sisa ' . format_rupiah($loan->outstanding_total),
+                            'badge' => $loan->status === 'OVERDUE' ? 'Menunggak' : '',
+                            'search' => trim(($loan->customer?->full_name ?? '') . ' ' . $loan->loan_number),
+                        ])->values()"
+                    />
+                    @error('loan_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
 
                     <template x-if="loanId">
                         <div class="rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-800/50">

@@ -30,17 +30,23 @@
                     <flux:heading size="lg">1. Pilih Pinjaman</flux:heading>
                     <flux:text variant="small" class="text-neutral-500">Pilih nomor pinjaman terkait jaminan ini.</flux:text>
 
-                    <select name="loan_id" id="loan_id" class="flux-input mt-2 w-full" required>
-                        <option value="">— Pilih Pinjaman —</option>
-                        @foreach ($loans as $loan)
-                            <option
-                                value="{{ $loan->id }}"
-                                {{ (old('loan_id', $preselectedLoan?->id) == $loan->id) ? 'selected' : '' }}
-                            >
-                                {{ $loan->loan_number }} — {{ $loan->customer?->full_name }} ({{ format_rupiah($loan->outstanding_total) }} sisa)
-                            </option>
-                        @endforeach
-                    </select>
+                    <label for="loan_id" class="text-sm font-medium text-neutral-700">Nomor Pinjaman *</label>
+                    <x-searchable-select
+                        name="loan_id"
+                        id="loan_id"
+                        required
+                        :selected="old('loan_id', $preselectedLoan?->id ?? '')"
+                        placeholder="Ketik nomor pinjaman (NADI-LOAN-…) atau nama nasabah…"
+                        :options="$loans->map(fn ($loan) => [
+                            'id' => (string) $loan->id,
+                            'label' => $loan->loan_number,
+                            'sublabel' => $loan->customer?->full_name . ' · Sisa ' . format_rupiah($loan->outstanding_total),
+                            'search' => trim(($loan->customer?->full_name ?? '') . ' ' . $loan->loan_number),
+                        ])->values()"
+                    />
+                    @error('loan_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <hr class="border-neutral-200" />
