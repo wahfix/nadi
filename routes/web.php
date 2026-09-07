@@ -3,6 +3,7 @@
 use App\Http\Controllers\CollateralController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReleaseController;
@@ -66,10 +67,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    // --- Modul Operasional ---
-    Route::middleware('permission:installments.view')
-        ->get('installments', fn () => view('modules.installments.index'))
-        ->name('installments.index');
+    // --- Modul Angsuran ---
+    Route::middleware('permission:installments.view')->prefix('installments')->name('installments.')->group(function () {
+        Route::get('/', [InstallmentController::class, 'index'])->name('index');
+        Route::get('{installment}', [InstallmentController::class, 'show'])->name('show');
+    });
 
     // --- Modul Pembayaran ---
     Route::middleware('permission:payments.view')->prefix('payments')->name('payments.')->group(function () {
