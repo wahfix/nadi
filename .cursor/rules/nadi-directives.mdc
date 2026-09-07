@@ -291,6 +291,67 @@ GEMINI.md                        → Direktif untuk Google Gemini/Antigravity
 
 ---
 
+## 14. ATURAN GIT BRANCH — LARANGAN KERJA DI MAIN
+
+> **KRITIS**: Aturan ini bersifat MUTLAK dan TANPA PENGECUALIAN.
+
+### Prinsip Dasar
+- Branch `main` adalah branch stabil yang berisi kode **verified & tested**
+- **DILARANG KERAS** AI Agent melakukan perubahan kode langsung di branch `main`
+- Setiap fase pembangunan **WAJIB** dikerjakan di branch terpisah
+
+### Naming Convention
+```
+fase/1-foundation
+fase/2-customer-management
+fase/3-loan-engine
+fase/4-payment-reversal
+fase/5-collection-lc
+fase/6-collateral-release
+fase/7-dashboards-ui
+fase/8-reports-audit-print
+fase/9-testing-qa-polish
+```
+
+### Workflow Wajib
+```
+1. git checkout main
+2. git pull origin main
+3. git checkout -b fase/<nama-fase>
+4. ... mengerjakan kode ...
+5. git add . && git commit -m "Fase X: deskripsi"
+6. git push origin fase/<nama-fase>
+7. Buat PR ke main → review → merge
+8. git checkout main && git pull origin main
+```
+
+### Aturan Kunci
+| # | Aturan | Hukum |
+|---|--------|-------|
+| 1 | AI **DILARANG** `git commit` / `git push` di branch `main` | **WAJIB** |
+| 2 | Setiap fase = 1 branch baru dari `main` | **WAJIB** |
+| 3 | Branch fase yang sudah di-merge boleh dihapus | **OPSIONAL** |
+| 4 | Commit message diawali nama fase: `Fase X: deskripsi` | **WAJIB** |
+| 5 | PR ke `main` wajib via GitHub/GitLab (bukan force push) | **WAJIB** |
+
+### Contoh Pelanggaran (DILARANG)
+```bash
+# ❌ DILARANG — langsung kerja di main
+git checkout main
+echo "kode baru" >> app/Models/Loan.php
+git add . && git commit -m "update"
+git push origin main
+
+# ✅ BENAR — buat branch fase dulu
+git checkout main
+git checkout -b fase/3-loan-engine
+echo "kode baru" >> app/Models/Loan.php
+git add . && git commit -m "Fase 3: tambah logic loan engine"
+git push origin fase/3-loan-engine
+```
+
+---
+
 > **PERINGATAN TERAKHIR**: Jika Anda AI Agent yang membaca file ini, Anda WAJIB
 > membuka dan membaca modul instruksi di folder `instructions/` SEBELUM menulis
 > kode apapun. Tidak ada pengecualian. Tidak ada jalan pintas. Kepatuhan penuh
