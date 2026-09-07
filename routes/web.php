@@ -3,6 +3,7 @@
 use App\Http\Controllers\CollateralController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PaymentController;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // --- Modul Nasabah ---
     Route::middleware('permission:customers.view')->prefix('customers')->name('customers.')->group(function () {
