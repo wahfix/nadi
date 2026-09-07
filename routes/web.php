@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PaymentController;
@@ -87,9 +88,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    Route::middleware('permission:collections.view')
-        ->get('collections', fn () => view('modules.collections.index'))
-        ->name('collections.index');
+    // --- Modul Penagihan (Loan Collector) ---
+    Route::middleware('permission:collections.view')->prefix('collections')->name('collections.')->group(function () {
+        Route::get('/', [CollectionController::class, 'index'])->name('index');
+
+        Route::middleware('permission:collections.create')->group(function () {
+            Route::get('create', [CollectionController::class, 'create'])->name('create');
+            Route::post('/', [CollectionController::class, 'store'])->name('store');
+        });
+    });
 
     // --- Modul Agunan ---
     Route::middleware('permission:collaterals.view')

@@ -2,11 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\CollectionActivity;
 use App\Models\Customer;
 use App\Models\Installment;
 use App\Models\Loan;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\CollectionService;
 use App\Services\LoanService;
 use App\Services\PaymentAllocationService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -21,11 +23,15 @@ class LoanSeeder extends Seeder
      * Seed realistic synthetic loan applications across the state machine
      * (no real borrower data).
      */
-    public function run(LoanService $loanService, PaymentAllocationService $paymentAllocationService): void
-    {
+    public function run(
+        LoanService $loanService,
+        PaymentAllocationService $paymentAllocationService,
+        CollectionService $collectionService,
+    ): void {
         $lo = User::where('email', 'lo@example.test')->firstOrFail();
         $admin = User::where('email', 'admin@example.test')->firstOrFail();
         $cashier = User::where('email', 'cashier@example.test')->firstOrFail();
+        $lc = User::where('email', 'lc@example.test')->firstOrFail();
         $userId = $lo->id;
 
         $customers = Customer::where('status', Customer::STATUS_ACTIVE)
@@ -121,6 +127,29 @@ class LoanSeeder extends Seeder
         $overdue = $loanService->prepareDisbursement($overdue, $admin->id);
         $overdue = $loanService->disburseLoan($overdue, $admin->id);
         $loanService->syncOverdue($overdue, $userId);
+
+        // Aktivitas penagihan demo (Fase 5): kontak gagal lalu janji bayar aktif di masa depan.
+        $collectionService->recordActivity(
+            $overdue->fresh(),
+            CollectionActivity::METHOD_WHATSAPP,
+            CollectionActivity::RESULT_NO_RESPONSE,
+            now()->subDays(2)->format('Y-m-d H:i'),
+            null,
+            null,
+            'WhatsApp tidak dibalas, akan dihubungi ulang (data demo).',
+            $lc->id,
+        );
+
+        $collectionService->recordActivity(
+            $overdue->fresh(),
+            CollectionActivity::METHOD_PHONE,
+            CollectionActivity::RESULT_PROMISE_TO_PAY,
+            now()->subDay()->format('Y-m-d H:i'),
+            now()->addWeek()->toDateString(),
+            1_000_000,
+            'Nasabah berkomitmen melunasi sebagian tunggakan pekan depan (data demo).',
+            $lc->id,
+        );
 
         // Pembayaran demo (Fase 4): satu angsuran penuh per pinjaman aktif + setoran parsial pada pinjaman menunggak.
         foreach ($activeLoans as $loan) {

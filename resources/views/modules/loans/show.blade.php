@@ -489,12 +489,63 @@
             {{-- Penagihan (Fase 5) --}}
             <div x-show="tab === 'penagihan'" x-cloak>
                 <flux:card>
-                    <flux:heading size="lg">Aktivitas Penagihan</flux:heading>
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <flux:heading size="lg">Aktivitas Penagihan</flux:heading>
+                        @can('create', \App\Models\CollectionActivity::class)
+                            @if (in_array($loan->status, ['ACTIVE', 'OVERDUE'], true) && $loan->outstanding_total > 0)
+                                <flux:button as="a" :href="route('collections.create', ['loan' => $loan->id])" wire:navigate variant="primary" icon="plus">
+                                    Catat Aktivitas
+                                </flux:button>
+                            @endif
+                        @endcan
+                    </div>
                     <div class="mt-4">
                         @if ($loan->collectionActivities->isEmpty())
                             <div class="flex flex-col items-center justify-center gap-2 p-8 text-center">
                                 <flux:icon name="hand-raised" variant="outline" class="size-8 text-neutral-400" />
                                 <flux:text>Belum ada aktivitas penagihan untuk pinjaman ini.</flux:text>
+                            </div>
+                        @else
+                            @php
+                                $activities = $loan->collectionActivities->sortByDesc('contact_date');
+                                $methodLabels = ['PHONE' => 'Telepon', 'WHATSAPP' => 'WhatsApp', 'IN_PERSON' => 'Kunjungan', 'OTHER' => 'Lainnya'];
+                                $resultLabels = ['PAID' => 'Sudah Membayar', 'PROMISE_TO_PAY' => 'Janji Bayar', 'NO_RESPONSE' => 'Tidak Ada Respons', 'CONTACT_FAILED' => 'Kontak Gagal', 'DISPUTED' => 'Sanggahan', 'OTHER' => 'Lainnya'];
+                                $resultColors = ['PAID' => 'green', 'PROMISE_TO_PAY' => 'emerald', 'NO_RESPONSE' => 'neutral', 'CONTACT_FAILED' => 'red', 'DISPUTED' => 'amber', 'OTHER' => 'neutral'];
+                            @endphp
+                            <div class="overflow-x-auto">
+                                <flux:table>
+                                    <flux:table.columns>
+                                        <flux:table.column>Waktu Kontak</flux:table.column>
+                                        <flux:table.column>Metode</flux:table.column>
+                                        <flux:table.column>Hasil</flux:table.column>
+                                        <flux:table.column>Janji Bayar</flux:table.column>
+                                        <flux:table.column>Petugas</flux:table.column>
+                                        <flux:table.column>Catatan</flux:table.column>
+                                    </flux:table.columns>
+                                    <flux:table.rows>
+                                        @foreach ($activities as $activity)
+                                            <flux:table.row>
+                                                <flux:table.cell>{{ format_date_indonesian($activity->contact_date, true) }}</flux:table.cell>
+                                                <flux:table.cell>{{ $methodLabels[$activity->contact_method] ?? $activity->contact_method }}</flux:table.cell>
+                                                <flux:table.cell>
+                                                    <flux:badge :color="$resultColors[$activity->result] ?? 'neutral'">
+                                                        {{ $resultLabels[$activity->result] ?? $activity->result }}
+                                                    </flux:badge>
+                                                </flux:table.cell>
+                                                <flux:table.cell>
+                                                    @if ($activity->result === \App\Models\CollectionActivity::RESULT_PROMISE_TO_PAY)
+                                                        {{ format_date($activity->promise_to_pay_date) }} ·
+                                                        {{ format_rupiah((int) $activity->promise_to_pay_amount) }}
+                                                    @else
+                                                        —
+                                                    @endif
+                                                </flux:table.cell>
+                                                <flux:table.cell class="text-sm">{{ $activity->collector?->name ?? '-' }}</flux:table.cell>
+                                                <flux:table.cell class="max-w-xs text-sm text-neutral-600 dark:text-neutral-300">{{ $activity->notes }}</flux:table.cell>
+                                            </flux:table.row>
+                                        @endforeach
+                                    </flux:table.rows>
+                                </flux:table>
                             </div>
                         @endif
                     </div>
