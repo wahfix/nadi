@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\CollateralController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\CustomerController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReleaseController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerificationController;
 use Illuminate\Support\Facades\Route;
@@ -45,6 +47,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         Route::get('{loan}', [LoanController::class, 'show'])->name('show');
+        Route::get('{loan}/print-summary', [LoanController::class, 'printSummary'])->name('print-summary');
+        Route::middleware('permission:installments.view')->get('{loan}/installments/print', [LoanController::class, 'printSchedule'])->name('print-installments');
 
         Route::middleware('permission:loans.edit')->group(function () {
             Route::get('{loan}/edit', [LoanController::class, 'edit'])->name('edit');
@@ -115,6 +119,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('{collateral}', [CollateralController::class, 'show'])->name('show');
 
+        Route::get('{collateral}/receipt', [CollateralController::class, 'receipt'])->name('receipt');
+
         Route::middleware('permission:collaterals.update_custody')->post('{collateral}/custody', [CollateralController::class, 'updateCustody'])->name('update-custody');
     });
 
@@ -128,6 +134,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         Route::get('{verification}', [VerificationController::class, 'show'])->name('show');
+
+        Route::get('{verification}/print', [VerificationController::class, 'printResult'])->name('print');
     });
 
     // --- Modul Pengambilan Jaminan ---
@@ -153,12 +161,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    Route::middleware('permission:reports.view')
-        ->get('reports', fn () => view('modules.reports.index'))
-        ->name('reports.index');
+    // --- Modul Laporan ---
+    Route::middleware('permission:reports.view')->prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('customers', [ReportController::class, 'customers'])->name('customers');
+        Route::get('loans', [ReportController::class, 'loans'])->name('loans');
+        Route::get('outstanding', [ReportController::class, 'outstanding'])->name('outstanding');
+        Route::get('due-dates', [ReportController::class, 'dueDates'])->name('due-dates');
+        Route::get('overdue', [ReportController::class, 'overdue'])->name('overdue');
+        Route::get('payments', [ReportController::class, 'payments'])->name('payments');
+        Route::get('collaterals', [ReportController::class, 'collaterals'])->name('collaterals');
+        Route::get('releases', [ReportController::class, 'releases'])->name('releases');
+        Route::get('collection-activities', [ReportController::class, 'collectionActivities'])->name('collection-activities');
+        Route::get('audit-logs', [ReportController::class, 'auditLogs'])->name('audit-logs');
+    });
 
+    // --- Modul Audit Log ---
     Route::middleware('permission:audit_logs.view')
-        ->get('audit-log', fn () => view('modules.audit-log.index'))
+        ->get('audit-log', [AuditLogController::class, 'index'])
         ->name('audit-log.index');
 });
 

@@ -275,6 +275,31 @@ class LoanController extends Controller
     }
 
     /**
+     * Print the loan summary document.
+     */
+    public function printSummary(Loan $loan): View
+    {
+        Gate::authorize('view', $loan);
+
+        $loan->load(['customer', 'creator', 'approver', 'installments']);
+
+        return view('modules.loans.print-summary', ['loan' => $loan]);
+    }
+
+    /**
+     * Print the installment schedule document.
+     */
+    public function printSchedule(Loan $loan): View
+    {
+        Gate::authorize('view', $loan);
+        Gate::authorize('viewAny', Installment::class);
+
+        $loan->load(['customer', 'installments']);
+
+        return view('modules.installments.print-schedule', ['loan' => $loan]);
+    }
+
+    /**
      * Run a loan mutation, converting validation errors into useful flash messages.
      */
     private function runAction(callable $operation, string $successMessage, Loan $loan): RedirectResponse

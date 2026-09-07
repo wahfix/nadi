@@ -142,6 +142,16 @@
                             </form>
                         @endif
                     @endcan
+
+                    <flux:button as="a" :href="route('loans.print-summary', $loan)" icon="printer">
+                        Ringkasan
+                    </flux:button>
+
+                    @can('viewAny', \App\Models\Installment::class)
+                        <flux:button as="a" :href="route('loans.print-installments', $loan)" icon="table-cells">
+                            Jadwal Angsuran
+                        </flux:button>
+                    @endcan
                 </div>
             </div>
         </flux:card>

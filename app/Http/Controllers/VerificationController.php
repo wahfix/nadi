@@ -124,8 +124,8 @@ class VerificationController extends Controller
         return view('modules.verifications.show', [
             'verification' => $verification,
             'methodLabels' => [
-                IdentityVerification::METHOD_GOVERNMENT_ID => 'KTP-el / Paspor / SIM',
-                IdentityVerification::METHOD_ACCOUNT_MATCH => 'Pencocokan Rekening Bank',
+                IdentityVerification::METHOD_GOVERNMENT_ID => 'Identitas Pemerintah',
+                IdentityVerification::METHOD_ACCOUNT_MATCH => 'Pencocokan Akun',
                 IdentityVerification::METHOD_MANUAL_CHECK => 'Pemeriksaan Manual',
                 IdentityVerification::METHOD_OTHER => 'Lainnya',
             ],
@@ -134,6 +134,20 @@ class VerificationController extends Controller
                 IdentityVerification::RESULT_FAILED => 'Gagal',
                 IdentityVerification::RESULT_REQUIRES_REVIEW => 'Perlu Review',
             ],
+        ]);
+    }
+
+    /**
+     * Print the identity verification result document.
+     */
+    public function printResult(IdentityVerification $verification): View
+    {
+        Gate::authorize('view', $verification);
+
+        $verification->load(['customer', 'loan', 'verifier']);
+
+        return view('modules.verifications.print-result', [
+            'verification' => $verification,
         ]);
     }
 }

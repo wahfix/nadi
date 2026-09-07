@@ -19,7 +19,7 @@
             <div class="text-center border-b-2 border-neutral-900 pb-4 mb-6">
                 <h1 class="text-2xl font-bold tracking-wide">NADI</h1>
                 <p class="text-sm text-neutral-500">Loan Management System</p>
-                <p class="mt-1 text-xs text-neutral-400">nadi.plenger.id</p>
+                <p class="mt-1 text-xs text-neutral-400">Terpercaya • Transparan • Tertata</p>
             </div>
 
             <h2 class="text-lg font-bold text-center mb-6 uppercase tracking-wider">
