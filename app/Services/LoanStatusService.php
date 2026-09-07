@@ -29,6 +29,8 @@ class LoanStatusService
 
     /**
      * All legal transitions across the whole state machine.
+     *
+     * @return array<string, array<int, string>>
      */
     public function allTransitions(): array
     {
@@ -48,6 +50,9 @@ class LoanStatusService
      *
      * Records a row in loan_status_histories and an audit event. No arbitrary
      * status changes are allowed.
+     *
+     * @param  array<string, int|string|null>|null  $oldSnapshot
+     * @param  array<string, int|string|null>|null  $newSnapshot
      */
     public function transition(
         Loan $loan,
@@ -66,7 +71,7 @@ class LoanStatusService
             }
 
             $fromStatus = $loan->status;
-            $actorId = $userId ?? Auth::id();
+            $actorId = $userId ?? (int) Auth::id();
 
             $loan->update(['status' => $toStatus]);
 
