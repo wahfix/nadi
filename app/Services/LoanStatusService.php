@@ -22,7 +22,8 @@ class LoanStatusService
         Loan::STATUS_READY_FOR_DISBURSEMENT => [Loan::STATUS_ACTIVE, Loan::STATUS_CANCELLED],
         Loan::STATUS_ACTIVE => [Loan::STATUS_OVERDUE, Loan::STATUS_COMPLETED, Loan::STATUS_DEFAULTED],
         Loan::STATUS_OVERDUE => [Loan::STATUS_ACTIVE, Loan::STATUS_COMPLETED, Loan::STATUS_DEFAULTED],
-        Loan::STATUS_COMPLETED => [],
+        // COMPLETED dapat dibuka kembali ke ACTIVE ketika pembayaran pelunasan dibalikkan (reversal).
+        Loan::STATUS_COMPLETED => [Loan::STATUS_ACTIVE],
         Loan::STATUS_DEFAULTED => [],
         Loan::STATUS_CANCELLED => [],
     ];
