@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\LoanController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,11 +27,41 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    // --- Modul Operasional ---
-    Route::middleware('permission:loans.view')
-        ->get('loans', fn () => view('modules.loans.index'))
-        ->name('loans.index');
+    // --- Modul Pinjaman ---
+    Route::middleware('permission:loans.view')->prefix('loans')->name('loans.')->group(function () {
+        Route::get('/', [LoanController::class, 'index'])->name('index');
 
+        Route::middleware('permission:loans.create')->group(function () {
+            Route::get('create', [LoanController::class, 'create'])->name('create');
+            Route::post('/', [LoanController::class, 'store'])->name('store');
+            Route::post('calculate', [LoanController::class, 'calculatePreview'])->name('calculate');
+        });
+
+        Route::get('{loan}', [LoanController::class, 'show'])->name('show');
+
+        Route::middleware('permission:loans.edit')->group(function () {
+            Route::get('{loan}/edit', [LoanController::class, 'edit'])->name('edit');
+            Route::put('{loan}', [LoanController::class, 'update'])->name('update');
+            Route::post('{loan}/submit', [LoanController::class, 'submit'])->name('submit');
+            Route::post('{loan}/cancel', [LoanController::class, 'cancel'])->name('cancel');
+        });
+
+        Route::middleware('permission:loans.review')->group(function () {
+            Route::post('{loan}/review', [LoanController::class, 'review'])->name('review');
+        });
+
+        Route::middleware('permission:loans.approve')->group(function () {
+            Route::post('{loan}/approve', [LoanController::class, 'approve'])->name('approve');
+            Route::post('{loan}/reject', [LoanController::class, 'reject'])->name('reject');
+            Route::post('{loan}/ready', [LoanController::class, 'ready'])->name('ready');
+        });
+
+        Route::middleware('permission:loans.disburse')->group(function () {
+            Route::post('{loan}/disburse', [LoanController::class, 'disburse'])->name('disburse');
+        });
+    });
+
+    // --- Modul Operasional ---
     Route::middleware('permission:installments.view')
         ->get('installments', fn () => view('modules.installments.index'))
         ->name('installments.index');
