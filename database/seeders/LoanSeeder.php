@@ -5,8 +5,10 @@ namespace Database\Seeders;
 use App\Models\Customer;
 use App\Models\Installment;
 use App\Models\Loan;
+use App\Models\Payment;
 use App\Models\User;
 use App\Services\LoanService;
+use App\Services\PaymentAllocationService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -19,10 +21,11 @@ class LoanSeeder extends Seeder
      * Seed realistic synthetic loan applications across the state machine
      * (no real borrower data).
      */
-    public function run(LoanService $loanService): void
+    public function run(LoanService $loanService, PaymentAllocationService $paymentAllocationService): void
     {
         $lo = User::where('email', 'lo@example.test')->firstOrFail();
         $admin = User::where('email', 'admin@example.test')->firstOrFail();
+        $cashier = User::where('email', 'cashier@example.test')->firstOrFail();
         $userId = $lo->id;
 
         $customers = Customer::where('status', Customer::STATUS_ACTIVE)
@@ -85,6 +88,8 @@ class LoanSeeder extends Seeder
             ['principal' => 7_500_000, 'tenor' => 6, 'first_due' => now()->addMonth()->toDateString()],
         ];
 
+        $activeLoans = [];
+
         foreach ($activeSpecs as $index => $row) {
             $loan = $loanService->createDraft($defaults(
                 $customers[(20 + $index) % $customers->count()]->id,
@@ -98,7 +103,7 @@ class LoanSeeder extends Seeder
             $loan = $loanService->startReview($loan, $userId);
             $loan = $loanService->approveLoan($loan, $admin->id);
             $loan = $loanService->prepareDisbursement($loan, $admin->id);
-            $loanService->disburseLoan($loan, $admin->id);
+            $activeLoans[] = $loanService->disburseLoan($loan, $admin->id);
         }
 
         // Menunggak — first due sudah lewat dan belum dibayar.
@@ -116,6 +121,33 @@ class LoanSeeder extends Seeder
         $overdue = $loanService->prepareDisbursement($overdue, $admin->id);
         $overdue = $loanService->disburseLoan($overdue, $admin->id);
         $loanService->syncOverdue($overdue, $userId);
+
+        // Pembayaran demo (Fase 4): satu angsuran penuh per pinjaman aktif + setoran parsial pada pinjaman menunggak.
+        foreach ($activeLoans as $loan) {
+            $firstInstallment = $loan->installments()->orderBy('installment_number')->first();
+
+            if ($firstInstallment) {
+                $paymentAllocationService->recordPayment(
+                    $loan->fresh(),
+                    $firstInstallment->total_due,
+                    Payment::METHOD_CASH,
+                    now()->toDateString(),
+                    null,
+                    'Setoran angsuran ke-1 (data demo).',
+                    $cashier->id,
+                );
+            }
+        }
+
+        $paymentAllocationService->recordPayment(
+            $overdue->fresh(),
+            500_000,
+            Payment::METHOD_CASH,
+            now()->toDateString(),
+            null,
+            'Setoran parsial atas tunggakan (data demo).',
+            $cashier->id,
+        );
 
         // Lunas — seluruh kewajiban diselesaikan pada masa lampau.
         $completed = $loanService->createDraft($defaults(

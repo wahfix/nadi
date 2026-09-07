@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LoanController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -66,9 +67,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->get('installments', fn () => view('modules.installments.index'))
         ->name('installments.index');
 
-    Route::middleware('permission:payments.view')
-        ->get('payments', fn () => view('modules.payments.index'))
-        ->name('payments.index');
+    // --- Modul Pembayaran ---
+    Route::middleware('permission:payments.view')->prefix('payments')->name('payments.')->group(function () {
+        Route::get('/', [PaymentController::class, 'index'])->name('index');
+
+        Route::middleware('permission:payments.create')->group(function () {
+            Route::get('create', [PaymentController::class, 'create'])->name('create');
+            Route::post('/', [PaymentController::class, 'store'])->name('store');
+        });
+
+        Route::get('{payment}', [PaymentController::class, 'show'])->name('show');
+
+        Route::middleware('permission:payments.receipt')->group(function () {
+            Route::get('{payment}/receipt', [PaymentController::class, 'receipt'])->name('receipt');
+        });
+
+        Route::middleware('permission:payments.reverse')->group(function () {
+            Route::post('{payment}/reverse', [PaymentController::class, 'reverse'])->name('reverse');
+        });
+    });
 
     Route::middleware('permission:collections.view')
         ->get('collections', fn () => view('modules.collections.index'))

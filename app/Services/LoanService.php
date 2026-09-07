@@ -233,6 +233,30 @@ class LoanService
     }
 
     /**
+     * Reopen a COMPLETED loan back to ACTIVE when a payoff payment is reversed.
+     */
+    public function reopenCompletedLoan(Loan $loan, ?int $userId = null, ?string $reason = null): Loan
+    {
+        return DB::transaction(function () use ($loan, $userId, $reason) {
+            if ($loan->status !== Loan::STATUS_COMPLETED) {
+                throw new InvalidArgumentException('Hanya pinjaman berstatus COMPLETED yang dapat dibuka kembali.');
+            }
+
+            $this->transition(
+                $loan,
+                Loan::STATUS_ACTIVE,
+                $userId,
+                $reason ?? 'Pinjaman dibuka kembali karena pembalikan pembayaran pelunasan.',
+                AuditLogService::LOAN_STATUS_CHANGED,
+            );
+
+            $loan->update(['completed_at' => null]);
+
+            return $loan->refresh();
+        });
+    }
+
+    /**
      * Detect overdue installments and promote the loan to OVERDUE when needed.
      */
     public function syncOverdue(Loan $loan, ?int $userId = null): Loan

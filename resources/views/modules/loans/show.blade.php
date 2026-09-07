@@ -405,12 +405,66 @@
             {{-- Pembayaran (Fase 4) --}}
             <div x-show="tab === 'pembayaran'" x-cloak>
                 <flux:card>
-                    <flux:heading size="lg">Riwayat Pembayaran</flux:heading>
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <flux:heading size="lg">Riwayat Pembayaran</flux:heading>
+                        @can('create', \App\Models\Payment::class)
+                            @if (in_array($loan->status, ['ACTIVE', 'OVERDUE'], true) && $loan->outstanding_total > 0)
+                                <flux:button as="a" :href="route('payments.create', ['loan' => $loan->id])" wire:navigate variant="primary" icon="plus">
+                                    Catat Pembayaran
+                                </flux:button>
+                            @endif
+                        @endcan
+                    </div>
                     <div class="mt-4">
                         @if ($loan->payments->isEmpty())
                             <div class="flex flex-col items-center justify-center gap-2 p-8 text-center">
                                 <flux:icon name="banknotes" variant="outline" class="size-8 text-neutral-400" />
                                 <flux:text>Belum ada pembayaran untuk pinjaman ini.</flux:text>
+                            </div>
+                        @else
+                            <div class="overflow-x-auto">
+                                <flux:table>
+                                    <flux:table.columns>
+                                        <flux:table.column>No. Pembayaran</flux:table.column>
+                                        <flux:table.column>Tanggal</flux:table.column>
+                                        <flux:table.column>Nominal</flux:table.column>
+                                        <flux:table.column>Alokasi (Pokok / Bunga / Denda)</flux:table.column>
+                                        <flux:table.column>Metode</flux:table.column>
+                                        <flux:table.column>Status</flux:table.column>
+                                        <flux:table.column>Aksi</flux:table.column>
+                                    </flux:table.columns>
+                                    <flux:table.rows>
+                                        @foreach ($loan->payments as $payment)
+                                            <flux:table.row>
+                                                <flux:table.cell>
+                                                    <a href="{{ route('payments.show', $payment) }}" wire:navigate class="font-mono text-sm font-medium text-neutral-900 hover:underline">
+                                                        {{ $payment->payment_number }}
+                                                    </a>
+                                                </flux:table.cell>
+                                                <flux:table.cell>{{ format_date($payment->payment_date) }}</flux:table.cell>
+                                                <flux:table.cell>{{ format_rupiah($payment->amount) }}</flux:table.cell>
+                                                <flux:table.cell class="text-xs text-neutral-600">
+                                                    {{ format_rupiah($payment->principal_component) }} /
+                                                    {{ format_rupiah($payment->interest_component) }} /
+                                                    {{ format_rupiah($payment->penalty_component) }}
+                                                </flux:table.cell>
+                                                <flux:table.cell>{{ $payment->payment_method }}</flux:table.cell>
+                                                <flux:table.cell>
+                                                    @if ($payment->isReversed())
+                                                        <flux:badge color="red">Dibatalkan</flux:badge>
+                                                    @else
+                                                        <flux:badge color="green">Sah</flux:badge>
+                                                    @endif
+                                                </flux:table.cell>
+                                                <flux:table.cell>
+                                                    <flux:button as="a" :href="route('payments.show', $payment)" wire:navigate size="sm" variant="ghost">
+                                                        Lihat
+                                                    </flux:button>
+                                                </flux:table.cell>
+                                            </flux:table.row>
+                                        @endforeach
+                                    </flux:table.rows>
+                                </flux:table>
                             </div>
                         @endif
                     </div>
