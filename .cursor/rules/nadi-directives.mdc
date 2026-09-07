@@ -356,3 +356,60 @@ git push origin fase/3-loan-engine
 > membuka dan membaca modul instruksi di folder `instructions/` SEBELUM menulis
 > kode apapun. Tidak ada pengecualian. Tidak ada jalan pintas. Kepatuhan penuh
 > terhadap 12 invarian mutlak di atas adalah SYARAT ABSOLUT.
+
+---
+
+## 15. ATURAN COMMIT MESSAGE — STANDAR WAJIB
+
+> **KRITIS**: Setiap commit message WAJIB mengikuti standar di bawah ini.
+> **DILARANG KERAS** commit dengan pesan yang tidak sesuai format.
+
+### Format Wajib
+```
+<Fase/Tipe>: <Deskripsi Singkat>
+```
+
+### Tipe Commit yang Diizinkan
+| Tipe | Keterangan | Contoh |
+|------|------------|--------|
+| `Fase X` | Pengerjaan fase pembangunan | `Fase 1: setup auth dan RBAC` |
+| `Fix` | Perbaikan bug | `Fix: kalkulasi bunga FLAT salah` |
+| `Add` | Penambahan fitur baru | `Add: validasi 8 syarat pelepasan jaminan` |
+| `Update` | Pembaruan fitur yang sudah ada | `Update: format tanggal ke DD/MM/YYYY` |
+| `Refactor` | Refaktor kode tanpa ubah fungsi | `Refactor: pindahkan logika ke Service Layer` |
+| `Test` | Penambahan/perbaikan test | `Test: tambah test case payment allocation` |
+| `Docs` | Dokumentasi | `Docs: update MASTER_BUILD_SPECIFICATION` |
+| `Chore` | Maintenance, migrasi, config | `Chore: tambah index ke tabel loans` |
+
+### Aturan Deskripsi
+1. **Bahasa**: Inggris untuk kode, Indonesia untuk UI — deskripsi commit boleh campur
+2. **Panjang**: Maksimal 72 karakter untuk subject line
+3. **Kapitalisasi**: Huruf pertama tipe WAJIB kapital (`Fase`, `Fix`, `Add`)
+4. **Tanda baca**: TANPA titik di akhir deskripsi
+5. **Bahasa Kode**: Gunakan istilah teknis yang tepat (`migration`, `service`, `controller`)
+
+### Contoh yang BENAR
+```
+Fase 1: setup auth dan RBAC
+Fix: kalkulasi bunga REDUCING_BALANCE salah
+Add: implementasi PaymentAllocationService
+Update: format uang ke Rp X.XXX.XXX
+Refactor: pindahkan validasi ke FormRequest
+Test: tambah test case collateral release
+Docs: tambah bagian 15 ke .ai-instructions.md
+Chore: jalankan migrate:fresh --seed
+```
+
+### Contoh yang DILARANG
+```
+update                          ❌ Tidak ada tipe, terlalu umum
+fix bug                         ❌ Tidak ada tipe
+fase 1                          ❌ Tipe harus kapital awal
+Fase 1: setup auth dan RBAC.    ❌ Titik di akhir
+Fase 1: Menambahkan authentication dan authorization pada halaman login  ❌ Terlalu panjang
+```
+
+### Kaitan dengan Branch (Section 14)
+- Commit di branch `fase/X` **WAJIB** diawali `Fase X:`
+- Commit di branch feature/hotfix boleh guna tipe lain (`Fix:`, `Add:`, dll.)
+- **DILARANG** commit kosong (empty commit) tanpa perubahan kode

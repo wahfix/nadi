@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Models\Customer;
+use App\Models\Loan;
 use App\Models\Role;
 use App\Models\User;
 use App\Policies\CustomerPolicy;
+use App\Policies\LoanPolicy;
 use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Blade;
@@ -54,6 +56,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(User::class, UserPolicy::class);
 
         Gate::policy(Customer::class, CustomerPolicy::class);
+
+        Gate::policy(Loan::class, LoanPolicy::class);
 
         Blade::if('role', function ($role) {
             return auth()->check() && auth()->user()->hasRole($role);
