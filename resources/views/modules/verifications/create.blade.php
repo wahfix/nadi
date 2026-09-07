@@ -28,17 +28,22 @@
 
                 <div class="flex flex-col gap-1">
                     <flux:heading size="lg">1. Pilih Pinjaman</flux:heading>
-                    <select name="loan_id" id="loan_id" class="flux-input mt-2 w-full" required>
-                        <option value="">— Pilih Pinjaman —</option>
-                        @foreach ($loans as $loan)
-                            <option
-                                value="{{ $loan->id }}"
-                                {{ (old('loan_id', $preselectedLoan?->id) == $loan->id) ? 'selected' : '' }}
-                            >
-                                {{ $loan->loan_number }} — {{ $loan->customer?->full_name }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <x-searchable-select
+                        name="loan_id"
+                        id="loan_id"
+                        required
+                        :selected="old('loan_id', $preselectedLoan?->id ?? '')"
+                        placeholder="Ketik nomor pinjaman (NADI-LOAN-…) atau nama nasabah…"
+                        :options="$loans->map(fn ($loan) => [
+                            'id' => (string) $loan->id,
+                            'label' => $loan->loan_number,
+                            'sublabel' => $loan->customer?->full_name,
+                            'search' => trim(($loan->customer?->full_name ?? '') . ' ' . $loan->loan_number),
+                        ])->values()"
+                    />
+                    @error('loan_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <hr class="border-neutral-200" />

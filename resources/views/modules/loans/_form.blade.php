@@ -25,23 +25,20 @@
     @method($method)
 
     <div class="grid gap-4 md:grid-cols-2">
-        <div class="md:col-span-2">
-            <flux:field>
-                <flux:select
-                    name="customer_id"
-                    :label="__('Nasabah')"
-                    required
-                    x-model="customerId"
-                    x-on:change="triggerPreview()"
-                >
-                    <flux:select.option value="">-- Pilih Nasabah --</flux:select.option>
-                    @foreach ($customers as $customer)
-                        <flux:select.option :value="$customer->id" :selected="old('customer_id', $loan?->customer_id) == $customer->id">
-                            {{ $customer->full_name }} — {{ $customer->customer_code }}
-                        </flux:select.option>
-                    @endforeach
-                </flux:select>
-            </flux:field>
+        <div class="md:col-span-2" @searchable-select:change="customerId = $event.detail.value; triggerPreview()">
+            <x-searchable-select
+                name="customer_id"
+                :label="__('Nasabah')"
+                required
+                :selected="old('customer_id', $loan?->customer_id ?? '')"
+                placeholder="Ketik nama, kode CUS, NIK, atau telepon nasabah…"
+                :options="$customers->map(fn ($c) => [
+                    'id' => (string) $c->id,
+                    'label' => $c->full_name,
+                    'sublabel' => $c->customer_code . ' · ' . ($c->city ?? ''),
+                    'search' => trim($c->full_name . ' ' . $c->customer_code . ' ' . $c->national_id_number . ' ' . $c->phone),
+                ])->values()"
+            />
         </div>
 
         <flux:field>
