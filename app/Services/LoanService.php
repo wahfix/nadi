@@ -249,7 +249,7 @@ class LoanService
                     $this->transition(
                         $loan,
                         Loan::STATUS_OVERDUE,
-                        $userId ?? Auth::id(),
+                        $userId ?? (int) Auth::id(),
                         'Teridentifikasi memiliki angsuran yang menunggak.',
                         AuditLogService::LOAN_STATUS_CHANGED,
                     );

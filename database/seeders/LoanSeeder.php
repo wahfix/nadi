@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Customer;
 use App\Models\Installment;
 use App\Models\Loan;
 use App\Models\User;
@@ -24,7 +25,7 @@ class LoanSeeder extends Seeder
         $admin = User::where('email', 'admin@example.test')->firstOrFail();
         $userId = $lo->id;
 
-        $customers = \App\Models\Customer::where('status', \App\Models\Customer::STATUS_ACTIVE)
+        $customers = Customer::where('status', Customer::STATUS_ACTIVE)
             ->orderBy('id')
             ->limit(20)
             ->get();

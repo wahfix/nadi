@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Customer;
 use App\Models\Loan;
+use App\Models\User;
 use App\Services\LoanCalculationService;
 use App\Services\SequentialNumberService;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -34,7 +36,7 @@ class LoanFactory extends Factory
 
         return [
             'loan_number' => app(SequentialNumberService::class)->generateLoanNumber(),
-            'customer_id' => \App\Models\Customer::factory(),
+            'customer_id' => Customer::factory(),
             'principal_amount' => $principal,
             'interest_rate' => $rateBps,
             'interest_method' => Loan::METHOD_FLAT,
@@ -52,7 +54,7 @@ class LoanFactory extends Factory
             'outstanding_penalty' => 0,
             'outstanding_total' => $calculation['total_payable'],
             'status' => Loan::STATUS_DRAFT,
-            'created_by' => \App\Models\User::factory(),
+            'created_by' => User::factory(),
         ];
     }
 }
