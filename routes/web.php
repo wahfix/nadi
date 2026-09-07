@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\CollateralController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReleaseController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VerificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -98,18 +101,44 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    // --- Modul Agunan ---
-    Route::middleware('permission:collaterals.view')
-        ->get('collaterals', fn () => view('modules.collaterals.index'))
-        ->name('collaterals.index');
+    // --- Modul Agunan (Jaminan) ---
+    Route::middleware('permission:collaterals.view')->prefix('collaterals')->name('collaterals.')->group(function () {
+        Route::get('/', [CollateralController::class, 'index'])->name('index');
 
-    Route::middleware('permission:verifications.view')
-        ->get('verifications', fn () => view('modules.verifications.index'))
-        ->name('verifications.index');
+        Route::middleware('permission:collaterals.receive')->group(function () {
+            Route::get('create', [CollateralController::class, 'create'])->name('create');
+            Route::post('/', [CollateralController::class, 'store'])->name('store');
+        });
 
-    Route::middleware('permission:releases.view')
-        ->get('releases', fn () => view('modules.releases.index'))
-        ->name('releases.index');
+        Route::get('{collateral}', [CollateralController::class, 'show'])->name('show');
+
+        Route::middleware('permission:collaterals.update_custody')->post('{collateral}/custody', [CollateralController::class, 'updateCustody'])->name('update-custody');
+    });
+
+    // --- Modul Verifikasi Identitas ---
+    Route::middleware('permission:verifications.view')->prefix('verifications')->name('verifications.')->group(function () {
+        Route::get('/', [VerificationController::class, 'index'])->name('index');
+
+        Route::middleware('permission:verifications.create')->group(function () {
+            Route::get('create', [VerificationController::class, 'create'])->name('create');
+            Route::post('/', [VerificationController::class, 'store'])->name('store');
+        });
+
+        Route::get('{verification}', [VerificationController::class, 'show'])->name('show');
+    });
+
+    // --- Modul Pengambilan Jaminan ---
+    Route::middleware('permission:releases.view')->prefix('releases')->name('releases.')->group(function () {
+        Route::get('/', [ReleaseController::class, 'index'])->name('index');
+
+        Route::middleware('permission:releases.execute')->group(function () {
+            Route::get('create', [ReleaseController::class, 'create'])->name('create');
+            Route::post('/', [ReleaseController::class, 'store'])->name('store');
+        });
+
+        Route::get('{release}', [ReleaseController::class, 'show'])->name('show');
+        Route::get('{release}/receipt', [ReleaseController::class, 'receipt'])->name('receipt');
+    });
 
     // --- Modul Administrasi ---
     Route::middleware('permission:users.view')->group(function () {
